@@ -1,0 +1,13 @@
+{
+  "name": "study-from-anything",
+  "version": "1.0.0",
+  "description": "AI-powered study aid generator",
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "dev": "cd backend && nodemon server.js",
+    "install-all": "npm install && cd backend && npm install"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

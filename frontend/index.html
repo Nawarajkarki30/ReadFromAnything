@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Study From Anything — Upload any PDF or paste text and instantly generate AI-powered summaries, flashcards, and quizzes." />
+  <title>Study From Anything</title>
+
+  <!-- Google Fonts: Clean modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Marked.js: To render beautiful Markdown summaries -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Our custom styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
+  <header class="header">
+    <div class="header-inner" style="position: relative;">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">Study From Anything</span>
+      </div>
+      <p class="tagline">AI-powered summaries, flashcards & quizzes from any text or PDF</p>
+      <button class="lib-btn" onclick="openLibrary()" style="position: absolute; right: 0; top: 0; background: white; border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; color: var(--purple); box-shadow: var(--shadow);">📚 My Library</button>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+  ============================================================ -->
+  <main class="container">
+
+    <!-- ---- INPUT SECTION ---- -->
+    <section class="card input-section" id="input-section">
+      <h2 class="section-title">
+        <span class="step-badge">1</span> Add Your Study Material
+      </h2>
+
+      <!-- PDF Upload -->
+      <div class="upload-area" id="upload-area">
+        <input type="file" id="pdf-input" accept=".pdf" hidden />
+        <label for="pdf-input" class="upload-label" id="upload-label">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">
+            <strong>Click to upload a PDF</strong>
+            <span>or drag &amp; drop it here</span>
+          </div>
+        </label>
+        <!-- Shows status after PDF is attached -->
+        <div class="pdf-status" id="pdf-status" hidden style="align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+          <span id="pdf-status-text">PDF attached.</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>or paste text directly</span>
+      </div>
+
+      <!-- Text Area -->
+      <textarea
+        id="text-input"
+        class="text-input"
+        placeholder="Paste your notes, article, or any study material here..."
+        rows="8"
+      ></textarea>
+
+      <!-- Character counter -->
+      <div class="char-counter">
+        <span id="char-count">0</span> characters
+      </div>
+
+      <!-- Error message (hidden by default) -->
+      <div class="error-message" id="input-error" hidden>
+        <span>⚠️</span> <span id="input-error-text">Please add some text or upload a PDF first.</span>
+      </div>
+
+      <!-- Advanced Settings: Custom Slider -->
+      <div class="advanced-settings" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border);">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <label for="depth-slider" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
+            ⚙️ Depth & Quantity
+          </label>
+          <span id="depth-val" style="font-size: 0.9rem; color: var(--purple); font-weight: 700;">10 Items</span>
+        </div>
+        <input type="range" id="depth-slider" min="5" max="30" value="10" step="1" 
+               style="width: 100%; cursor: pointer;" 
+               oninput="document.getElementById('depth-val').innerText = this.value + (this.value >= 30 ? '+' : '') + ' Items';" />
+        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.4rem;">
+          Slide right for a deeper, more rigorous AI analysis.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---- ACTION BUTTONS ---- -->
+    <section class="actions-section" id="actions-section" aria-label="Generate actions">
+      <h2 class="section-title">
+        <span class="step-badge">2</span> Choose What to Generate
+      </h2>
+
+      <div class="button-grid">
+        <!-- SUMMARY -->
+        <button class="action-btn btn-summary" id="btn-summary" onclick="generate('summary')">
+          <span class="btn-icon">📝</span>
+          <span class="btn-label">Comprehensive Summary</span>
+          <span class="btn-desc">All key takeaways</span>
+        </button>
+
+        <!-- FLASHCARDS -->
+        <button class="action-btn btn-flashcards" id="btn-flashcards" onclick="generate('flashcards')">
+          <span class="btn-icon">🧠</span>
+          <span class="btn-label">Flashcards</span>
+          <span class="btn-desc">Master all concepts</span>
+        </button>
+
+        <!-- QUIZ -->
+        <button class="action-btn btn-quiz" id="btn-quiz" onclick="generate('quiz')">
+          <span class="btn-icon">🎯</span>
+          <span class="btn-label">Exam Mode</span>
+          <span class="btn-desc">MCQs with explanations</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ---- LOADING INDICATOR ---- -->
+    <div class="loading-overlay" id="loading" hidden>
+      <div class="loading-card">
+        <div class="loading-spinner"></div>
+        <p class="loading-text" id="loading-text">Generating your summary...</p>
+        <p class="loading-sub">The AI is reading your content ✨</p>
+      </div>
+    </div>
+
+    <!-- ---- OUTPUT SECTION ---- -->
+    <section class="card output-section" id="output-section" hidden>
+
+      <div class="output-header">
+        <h2 class="output-title" id="output-title">Results</h2>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="copy-btn" id="export-btn" onclick="exportResults()" title="Export results">
+            📥 Export
+          </button>
+          <button class="copy-btn" id="copy-btn" onclick="copyResults()" title="Copy to clipboard">
+            📋 Copy
+          </button>
+        </div>
+      </div>
+
+      <!-- Placeholder badge when using demo mode -->
+      <div class="demo-badge" id="demo-badge" hidden>
+        🔑 Demo mode — Add your Gemini API key for real AI results
+      </div>
+
+      <!-- Truncation badge for large texts -->
+      <div class="demo-badge warning-badge" id="truncation-badge" style="background-color: var(--card-bg, #fff); color: #b7791f; border-left: 4px solid #ecc94b; margin-top: 0.5rem;" hidden>
+        ⚠️ <strong>Note:</strong> Your text was very long and has been truncated to fit the AI's maximum limit.
+      </div>
+
+      <!-- SUMMARY OUTPUT -->
+      <div id="summary-output" hidden>
+        <ul class="summary-list" id="summary-list"></ul>
+      </div>
+
+      <!-- FLASHCARDS OUTPUT -->
+      <div id="flashcards-output" hidden>
+        <p class="hint-text">💡 Use Keyboard (Arrows to navigate, Spacebar to flip)</p>
+        
+        <div class="deck-layout" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+          <button class="nav-btn" onclick="prevCard()" id="btn-prev" disabled>❮</button>
+          
+          <div class="deck-stage" id="deck-stage" style="flex: 1; min-height: 200px;">
+            <!-- Active Card -->
+          </div>
+          
+          <button class="nav-btn" onclick="nextCard()" id="btn-next">❯</button>
+        </div>
+
+        <div class="deck-controls" style="text-align: center; margin-top: 1.5rem;">
+          <span id="deck-counter" style="font-weight: 700; color: var(--text-secondary);">— / —</span>
+        </div>
+      </div>
+
+      <!-- QUIZ OUTPUT -->
+      <div id="quiz-output" hidden>
+        <div class="quiz-container" id="quiz-container"></div>
+        <div class="quiz-actions" id="quiz-actions" hidden>
+          <button class="submit-btn" id="submit-quiz" onclick="submitQuiz()">
+            Check My Answers
+          </button>
+        </div>
+        <div class="quiz-score" id="quiz-score" hidden></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
+  <footer class="footer">
+    <p>Study From Anything — Powered by Google Gemini AI</p>
+    <p class="footer-sub">Upload a PDF or paste text to start studying smarter 🚀</p>
+  </footer>
+
+  <!-- MODAL FOR DASHBOARD HISTORY -->
+  <div id="library-modal" hidden style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; backdrop-filter: blur(4px);">
+    <div style="background: white; width: 90%; max-width: 600px; max-height: 80vh; border-radius: var(--radius); padding: 2rem; overflow-y: auto; box-shadow: var(--shadow-lg);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+        <h2 style="margin: 0; color: var(--text-primary);">📚 My Library</h2>
+        <button onclick="closeLibrary()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">×</button>
+      </div>
+      <div id="library-list" style="display: flex; flex-direction: column; gap: 0.8rem;">
+        <!-- Populated by openLibrary() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Our custom JavaScript -->
+  <script src="script.js?v=4"></script>
+
+</body>
+</html>
