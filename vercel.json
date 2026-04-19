@@ -8,16 +8,16 @@
   ],
   "routes": [
     {
-      "src": "/(css|js|images)/(.*)",
-      "dest": "frontend/$1/$2"
-    },
-    {
       "src": "/generate",
       "dest": "backend/server.js"
     },
     {
       "src": "/api/(.*)",
       "dest": "backend/server.js"
+    },
+    {
+      "src": "/(index.html|script.js|style.css|favicon.ico)",
+      "dest": "frontend/$1"
     },
     {
       "src": "/(.*)",
